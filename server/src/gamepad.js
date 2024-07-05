@@ -15,7 +15,7 @@ module.exports = class GameController {
             ioctl(this.fd, uinput.UI_DEV_DESTROY);
             fs.close(this.fd, err => {
                 if (err) {
-                    console.error('error to close file', err)
+                    console.error('error to close file', err);
                 }
             });
             this.fd = undefined;
@@ -66,6 +66,11 @@ module.exports = class GameController {
 
             uidev.allocate();
             var buffer = uidev.buffer();
+
+            // Vérifiez que config.gamepadName est défini
+            if (typeof config.gamepadName !== 'string') {
+                throw new Error('config.gamepadName is not defined or is not a string');
+            }
 
             uidev.fields.name = Buffer.from(config.gamepadName);
             uidev.fields.id.bustype = uinput.BUS_USB;
