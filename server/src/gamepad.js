@@ -67,11 +67,15 @@ module.exports = class GameController {
             uidev.allocate();
             var buffer = uidev.buffer();
 
-            // Assurez-vous que config.gamepadName est une chaîne et convertissez-la en Buffer
-            const gamepadNameBuffer = Buffer.alloc(80);
-            gamepadNameBuffer.write(config.gamepadName);
+            // Vérifiez que config.gamepadName est défini et est une chaîne
+            if (typeof config.gamepadName !== 'string') {
+                throw new Error('config.gamepadName is not defined or is not a string');
+            }
 
-            uidev.fields.name = gamepadNameBuffer;
+            // Convertir le nom du gamepad en Buffer
+            const gamepadNameBuffer = Buffer.from(config.gamepadName, 'ascii');
+            gamepadNameBuffer.copy(buffer, uidev.fields.name.offset, 0, Math.min(gamepadNameBuffer.length, 80));
+
             uidev.fields.id.bustype = uinput.BUS_USB;
             uidev.fields.id.vendor = config.vendorId;
             uidev.fields.id.product = config.productId;
