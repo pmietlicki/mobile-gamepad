@@ -59,10 +59,10 @@ module.exports = class GameController {
                 .chars('name', 80)
                 .struct('id', input_id)
                 .word32Ule('ff_effects_max')
-                .word32Ule('absmax', uinput.ABS_CNT)
-                .word32Ule('absmin', uinput.ABS_CNT)
-                .word32Ule('absfuzz', uinput.ABS_CNT)
-                .word32Ule('absflat', uinput.ABS_CNT);
+                .array('absmax', uinput.ABS_CNT, 'word32Ule')
+                .array('absmin', uinput.ABS_CNT, 'word32Ule')
+                .array('absfuzz', uinput.ABS_CNT, 'word32Ule')
+                .array('absflat', uinput.ABS_CNT, 'word32Ule');
 
             uidev.allocate();
             var buffer = uidev.buffer();
@@ -81,15 +81,15 @@ module.exports = class GameController {
             uidev.fields.id.product = config.productId;
             uidev.fields.id.version = config.version;
 
-            uidev.absmax[uinput.ABS_X] = 1023;
-            uidev.absmin[uinput.ABS_X] = 0;
-            uidev.absfuzz[uinput.ABS_X] = 0;
-            uidev.absflat[uinput.ABS_X] = 15;
+            uidev.fields.absmax[uinput.ABS_X] = 1023;
+            uidev.fields.absmin[uinput.ABS_X] = 0;
+            uidev.fields.absfuzz[uinput.ABS_X] = 0;
+            uidev.fields.absflat[uinput.ABS_X] = 15;
 
-            uidev.absmax[uinput.ABS_Y] = 1023;
-            uidev.absmin[uinput.ABS_Y] = 0;
-            uidev.absfuzz[uinput.ABS_Y] = 0;
-            uidev.absflat[uinput.ABS_Y] = 15;
+            uidev.fields.absmax[uinput.ABS_Y] = 1023;
+            uidev.fields.absmin[uinput.ABS_Y] = 0;
+            uidev.fields.absfuzz[uinput.ABS_Y] = 0;
+            uidev.fields.absflat[uinput.ABS_Y] = 15;
 
             fs.write(fd, buffer, 0, buffer.length, (err, written, buffer) => {
                 if (err) {
