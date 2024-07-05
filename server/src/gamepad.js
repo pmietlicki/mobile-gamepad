@@ -34,72 +34,74 @@ module.exports = class GameController {
 
             this.fd = fd;
 
-            ioctl(this.fd, uinput.UI_SET_EVBIT, uinput.EV_KEY);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_A);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_B);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_X);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_Y);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_TL);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_TR);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_TL2);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_TR2);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_START);
-            ioctl(this.fd, uinput.UI_SET_KEYBIT, uinput.BTN_SELECT);
-            ioctl(this.fd, uinput.UI_SET_EVBIT, uinput.EV_ABS);
-            ioctl(this.fd, uinput.UI_SET_ABSBIT, uinput.ABS_X);
-            ioctl(this.fd, uinput.UI_SET_ABSBIT, uinput.ABS_Y);
-
-            var input_id = Struct()
-                .word16Ule('bustype')
-                .word16Ule('vendor')
-                .word16Ule('product')
-                .word16Ule('version');
-
-            var uidev = Struct()
-                .chars('name', 80)
-                .struct('id', input_id)
-                .word32Ule('ff_effects_max')
-                .array('absmax', uinput.ABS_CNT, 'word32Ule')
-                .array('absmin', uinput.ABS_CNT, 'word32Ule')
-                .array('absfuzz', uinput.ABS_CNT, 'word32Ule')
-                .array('absflat', uinput.ABS_CNT, 'word32Ule');
-
-            uidev.allocate();
-            var buffer = uidev.buffer();
-
-            // Vérifiez que config.gamepadName est défini et est une chaîne
-            if (typeof config.gamepadName !== 'string') {
-                throw new Error('config.gamepadName is not defined or is not a string');
-            }
-
-            // Convertir le nom du gamepad en Buffer
-            const gamepadNameBuffer = Buffer.from(config.gamepadName, 'ascii');
-            gamepadNameBuffer.copy(buffer, uidev.fields.name.offset, 0, Math.min(gamepadNameBuffer.length, 80));
-
-            uidev.fields.id.bustype = uinput.BUS_USB;
-            uidev.fields.id.vendor = config.vendorId;
-            uidev.fields.id.product = config.productId;
-            uidev.fields.id.version = config.version;
-
-            uidev.fields.absmax[uinput.ABS_X] = 1023;
-            uidev.fields.absmin[uinput.ABS_X] = 0;
-            uidev.fields.absfuzz[uinput.ABS_X] = 0;
-            uidev.fields.absflat[uinput.ABS_X] = 15;
-
-            uidev.fields.absmax[uinput.ABS_Y] = 1023;
-            uidev.fields.absmin[uinput.ABS_Y] = 0;
-            uidev.fields.absfuzz[uinput.ABS_Y] = 0;
-            uidev.fields.absflat[uinput.ABS_Y] = 15;
-
-            fs.write(fd, buffer, 0, buffer.length, (err, written, buffer) => {
-                if (err) {
-                    console.error('Error writing to file descriptor:', err);
-                    throw err;
-                } else {
-                    ioctl(this.fd, uinput.UI_DEV_CREATE);
-                    console.log('Gamepad connected and device created');
+            const setup = async () => {
+                await ioctl(this.fd, uinput.UI_SET_EVBIT, uinput.EV_KEY);
+                await ioctl(this.fd, uinput.UI_SET_EVBIT, uinput.EV_ABS);
+                
+                const keys = [
+                    uinput.BTN_A, uinput.BTN_B, uinput.BTN_X, uinput.BTN_Y,
+                    uinput.BTN_TL, uinput.BTN_TR, uinput.BTN_TL2, uinput.BTN_TR2,
+                    uinput.BTN_START, uinput.BTN_SELECT
+                ];
+                for (const key of keys) {
+                    await ioctl(this.fd, uinput.UI_SET_KEYBIT, key);
                 }
-            });
+
+                await ioctl(this.fd, uinput.UI_SET_ABSBIT, uinput.ABS_X);
+                await ioctl(this.fd, uinput.UI_SET_ABSBIT, uinput.ABS_Y);
+
+                var input_id = Struct()
+                    .word16Ule('bustype')
+                    .word16Ule('vendor')
+                    .word16Ule('product')
+                    .word16Ule('version');
+
+                var uidev = Struct()
+                    .chars('name', 80)
+                    .struct('id', input_id)
+                    .word32Ule('ff_effects_max')
+                    .array('absmax', uinput.ABS_CNT, 'word32Ule')
+                    .array('absmin', uinput.ABS_CNT, 'word32Ule')
+                    .array('absfuzz', uinput.ABS_CNT, 'word32Ule')
+                    .array('absflat', uinput.ABS_CNT, 'word32Ule');
+
+                uidev.allocate();
+                var buffer = uidev.buffer();
+
+                if (typeof config.gamepadName !== 'string') {
+                    throw new Error('config.gamepadName is not defined or is not a string');
+                }
+
+                const gamepadNameBuffer = Buffer.from(config.gamepadName, 'ascii');
+                gamepadNameBuffer.copy(buffer, uidev.fields.name.offset, 0, Math.min(gamepadNameBuffer.length, 80));
+
+                uidev.fields.id.bustype = uinput.BUS_USB;
+                uidev.fields.id.vendor = config.vendorId;
+                uidev.fields.id.product = config.productId;
+                uidev.fields.id.version = config.version;
+
+                uidev.fields.absmax[uinput.ABS_X] = 1023;
+                uidev.fields.absmin[uinput.ABS_X] = 0;
+                uidev.fields.absfuzz[uinput.ABS_X] = 0;
+                uidev.fields.absflat[uinput.ABS_X] = 15;
+
+                uidev.fields.absmax[uinput.ABS_Y] = 1023;
+                uidev.fields.absmin[uinput.ABS_Y] = 0;
+                uidev.fields.absfuzz[uinput.ABS_Y] = 0;
+                uidev.fields.absflat[uinput.ABS_Y] = 15;
+
+                fs.write(fd, buffer, 0, buffer.length, (err, written, buffer) => {
+                    if (err) {
+                        console.error('Error writing to file descriptor:', err);
+                        throw err;
+                    } else {
+                        ioctl(this.fd, uinput.UI_DEV_CREATE);
+                        console.log('Gamepad connected and device created');
+                    }
+                });
+            };
+
+            setup().catch(console.error);
         });
     }
 
@@ -107,7 +109,6 @@ module.exports = class GameController {
         if (this.fd) {
             console.log('Sending event:', event);
 
-            // Convertir le code d'événement en un nombre
             const eventCode = parseInt(event.code, 16);
 
             var input_event = Struct()
@@ -123,7 +124,7 @@ module.exports = class GameController {
             var ev_buffer = input_event.buffer();
             var ev = input_event.fields;
             ev.type = event.type;
-            ev.code = eventCode;  // Utiliser le code converti
+            ev.code = eventCode;
             ev.value = event.value;
             ev.time.tv_sec = Math.round(Date.now() / 1000);
             ev.time.tv_usec = Math.round(Date.now() % 1000 * 1000);
@@ -159,5 +160,4 @@ module.exports = class GameController {
             console.warn('No file descriptor available for sending event');
         }
     }
-
-}
+};
