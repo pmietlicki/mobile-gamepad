@@ -17,20 +17,28 @@ var gamehub = function() {
     }.bind(this),
 
     // connect input device to hub
-    connect: function(callback) {
+    connect: function(callback, inputId) {
       try {
-        /// find free slot
-        for (var i = 1; i <= config.padLimit; i++) {
-          if (this.gamepads[i] === undefined) {
-            console.log(`Connecting gamepad to slot: ${i}`);
-            this.gamepads[i] = new GameController(i);
-            this.gamepads[i].connect();
-            return callback(i);
+        if (inputId !== undefined) {
+          // Force connection to a specific inputId
+          console.log(`Forcing connection of gamepad to slot: ${inputId}`);
+          this.gamepads[inputId] = new GameController(inputId);
+          this.gamepads[inputId].connect();
+          return callback(inputId);
+        } else {
+          // Find free slot
+          for (var i = 1; i <= config.padLimit; i++) {
+            if (this.gamepads[i] === undefined) {
+              console.log(`Connecting gamepad to slot: ${i}`);
+              this.gamepads[i] = new GameController(i);
+              this.gamepads[i].connect();
+              return callback(i);
+            }
           }
+          // No available free slot
+          console.warn('No available free slot for a new gamepad');
+          return callback(-1);
         }
-        // no available free slot
-        console.warn('No available free slot for a new gamepad');
-        return callback(-1);
       } catch (err) {
         console.log(err);
         return callback(500);
