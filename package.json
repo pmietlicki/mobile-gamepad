@@ -4,19 +4,19 @@
   "description": "Mobile wifi gamepad for RetroPie",
   "author": "contact@softwarelondon.net",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=12.0.0"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^4.19.2",
     "ioctl": "git+https://github.com/mk-pmb/node-ioctl.git",
-    "nipplejs": "^0.9.0",
-    "socket.io": "^4.7.0",
+    "nipplejs": "^0.10.2",
+    "socket.io": "^4.7.5",
     "struct": "^0.0.12",
     "uinput": "git+https://github.com/timstableford/node-uinput.git"
   },
   "devDependencies": {
     "grunt": "^1.6.1",
-    "grunt-contrib-clean": "^2.0.0",
+    "grunt-contrib-clean": "^2.0.1",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-watch": "^1.1.0",
     "grunt-express-server": "^0.5.4",
