@@ -1,10 +1,8 @@
-var config = {
+// config/config.js
+module.exports = {
   port: 8888,
-  padLimit: 4,
-  gamepadName: 'Mobile Gamepad',
+  gamepadName: 'My Gamepad',
   vendorId: 1234,
   productId: 5678,
   version: 1
 };
-
-module.exports = config;
