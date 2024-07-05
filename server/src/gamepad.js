@@ -106,6 +106,10 @@ module.exports = class GameController {
     sendEvent(event) {
         if (this.fd) {
             console.log('Sending event:', event);
+
+            // Convertir le code d'événement en un nombre
+            const eventCode = parseInt(event.code, 16);
+
             var input_event = Struct()
                 .struct('time', Struct()
                     .word32Sle('tv_sec')
@@ -119,7 +123,7 @@ module.exports = class GameController {
             var ev_buffer = input_event.buffer();
             var ev = input_event.fields;
             ev.type = event.type;
-            ev.code = event.code;
+            ev.code = eventCode;  // Utiliser le code converti
             ev.value = event.value;
             ev.time.tv_sec = Math.round(Date.now() / 1000);
             ev.time.tv_usec = Math.round(Date.now() % 1000 * 1000);
