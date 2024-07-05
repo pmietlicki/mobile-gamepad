@@ -93,6 +93,7 @@ module.exports = class GameController {
                     throw (err);
                 } else {
                     ioctl(this.fd, uinput.UI_DEV_CREATE);
+                    console.log('Gamepad connected and device created');
                 }
             });
         });
@@ -100,6 +101,7 @@ module.exports = class GameController {
 
     sendEvent(event) {
         if (this.fd) {
+            console.log('Sending event:', event);
             var input_event = Struct()
                 .struct('time', Struct()
                     .word32Sle('tv_sec')
@@ -139,11 +141,14 @@ module.exports = class GameController {
             try {
                 fs.writeSync(this.fd, ev_buffer, 0, ev_buffer.length);
                 fs.writeSync(this.fd, ev_end_buffer, 0, ev_end_buffer.length);
+                console.log('Event sent successfully');
             } catch (err) {
                 console.error('Error writing to file descriptor:', err);
             }
 
             return null;
+        } else {
+            console.warn('No file descriptor available for sending event');
         }
     }
 
