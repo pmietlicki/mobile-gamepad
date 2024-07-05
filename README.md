@@ -9,7 +9,7 @@ Mobile Universal Gamepad for RetroPie (http://mobilegamepad.net/)
 * Run below installation script
 
 ```bash
-# Install nodejs (tested with nodejs v18.19.1)
+# Install nodejs (tested with node: 'v14.21.3', npm: '9.2.0')
 sudo apt-get update && sudo apt-get upgrade
 sudo apt-get install -y nodejs
 sudo apt-get install -y npm
