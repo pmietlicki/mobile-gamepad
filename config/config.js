@@ -1,7 +1,7 @@
 var config = {
   port: 8888,
   padLimit: 4,
-  gamepadName: 'My Gamepad',
+  gamepadName: 'Mobile Gamepad',
   vendorId: 1234,
   productId: 5678,
   version: 1
