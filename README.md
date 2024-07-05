@@ -20,7 +20,7 @@ sudo npm install -g grunt-cli
 # Clone project MobileGamePad and install dependencies
 git clone https://github.com/pmietlicki/mobile-gamepad.git
 cd mobile-gamepad
-npm install
+npm install --python=/usr/bin/python3.10
 
 # Run MobileGamepad
 sudo grunt start
