@@ -1,6 +1,8 @@
 var config = require('./config/config');
 
 module.exports = function(grunt) {
+  var server;
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
@@ -9,8 +11,8 @@ module.exports = function(grunt) {
         open: false // do not open node-inspector in Chrome automatically
       }
     },
-    open : {
-      dev : {
+    open: {
+      dev: {
         path: 'http://127.0.0.1:' + process.env.PORT
       }
     },
@@ -28,7 +30,7 @@ module.exports = function(grunt) {
         tasks: ['copy:client']
       },
       server: {
-        files: ['config/config.js','server/*'],
+        files: ['config/config.js', 'server/*'],
         tasks: ['express:dev'],
         options: {
           spawn: false
@@ -60,7 +62,8 @@ module.exports = function(grunt) {
         options: {
           port: config.port,
           script: 'server/server.js',
-          background: true
+          background: true,
+          delay: 5000 // Add a delay to ensure the server starts properly
         }
       }
     }
@@ -84,4 +87,24 @@ module.exports = function(grunt) {
     'default', 'express', 'open:dev', 'watch'
   ]);
 
-}
+  grunt.registerTask('express-keepalive', 'Keep grunt running', function() {
+    this.async();
+  });
+
+  grunt.registerTask('express-server', function(target) {
+    if (target === 'dev') {
+      server = require('child_process').fork('server/server.js');
+    }
+  });
+
+  grunt.event.on('watch', function(action, filepath, target) {
+    if (target === 'server') {
+      if (server) {
+        server.kill('SIGTERM');
+        server = null;
+      }
+      grunt.task.run(['express-server:dev']);
+    }
+  });
+
+};
