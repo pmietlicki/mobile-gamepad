@@ -6,25 +6,24 @@ var Struct = require('struct');
 
 module.exports = class GameController {
 
-    constructor (inputId) {
+    constructor(inputId) {
         this.inputId = inputId;
     }
 
-    disconnect () {
+    disconnect() {
         if (this.fd) {
             ioctl(this.fd, uinput.UI_DEV_DESTROY);
             fs.close(this.fd, err => {
                 if (err) {
-                    console.err('error to close file', err)
+                    console.error('error to close file', err)
                 }
             });
             this.fd = undefined;
         }
-
         return null;
     }
 
-    connect () {
+    connect() {
         console.log('connect gamepad');
 
         fs.open('/dev/uinput', 'w+', (err, fd) => {
@@ -56,30 +55,30 @@ module.exports = class GameController {
                 .word16Ule('product')
                 .word16Ule('version');
 
-            var uinput_user_dev = Struct()
-                .chars('name', uinput.UINPUT_MAX_NAME_SIZE)
+            var uidev = Struct()
+                .chars('name', 80)
                 .struct('id', input_id)
                 .word32Ule('ff_effects_max')
-                .array('absmax', uinput.ABS_CNT, 'word32Sle')
-                .array('absmin', uinput.ABS_CNT, 'word32Sle')
-                .array('absfuzz', uinput.ABS_CNT, 'word32Sle')
-                .array('absflat', uinput.ABS_CNT, 'word32Sle');
+                .word32Ule('absmax', uinput.ABS_CNT)
+                .word32Ule('absmin', uinput.ABS_CNT)
+                .word32Ule('absfuzz', uinput.ABS_CNT)
+                .word32Ule('absflat', uinput.ABS_CNT);
 
-            uinput_user_dev.allocate();
-            var buffer = uinput_user_dev.buffer();
-            var uidev = uinput_user_dev.fields;
-            buffer.fill(0);
+            uidev.allocate();
+            var buffer = uidev.buffer();
 
-            uidev.name = "MobileGamePad";
-            uidev.id.bustype = uinput.BUS_USB;
-            uidev.id.vendor = 0x5;
-            uidev.id.product = 0x5;
-            uidev.id.version = 1;
-            uidev.absmax[uinput.ABS_X] = 255;
+            uidev.fields.name = Buffer.from(config.gamepadName);
+            uidev.fields.id.bustype = uinput.BUS_USB;
+            uidev.fields.id.vendor = config.vendorId;
+            uidev.fields.id.product = config.productId;
+            uidev.fields.id.version = config.version;
+
+            uidev.absmax[uinput.ABS_X] = 1023;
             uidev.absmin[uinput.ABS_X] = 0;
             uidev.absfuzz[uinput.ABS_X] = 0;
             uidev.absflat[uinput.ABS_X] = 15;
-            uidev.absmax[uinput.ABS_Y] = 255;
+
+            uidev.absmax[uinput.ABS_Y] = 1023;
             uidev.absmin[uinput.ABS_Y] = 0;
             uidev.absfuzz[uinput.ABS_Y] = 0;
             uidev.absflat[uinput.ABS_Y] = 15;
@@ -92,12 +91,10 @@ module.exports = class GameController {
                     ioctl(this.fd, uinput.UI_DEV_CREATE);
                 }
             });
-
         });
-
     }
 
-    sendEvent (event) {
+    sendEvent(event) {
         if (this.fd) {
             var input_event = Struct()
                 .struct('time', Struct()
@@ -135,11 +132,15 @@ module.exports = class GameController {
             ev_end.time.tv_sec = Math.round(Date.now() / 1000);
             ev_end.time.tv_usec = Math.round(Date.now() % 1000 * 1000);
 
-            fs.writeSync(this.fd, ev_buffer, 0, ev_buffer.length);
-            fs.writeSync(this.fd, ev_end_buffer, 0, ev_end_buffer.length);
+            try {
+                fs.writeSync(this.fd, ev_buffer, 0, ev_buffer.length);
+                fs.writeSync(this.fd, ev_end_buffer, 0, ev_end_buffer.length);
+            } catch (err) {
+                console.error('Error writing to file descriptor:', err);
+            }
 
             return null;
         }
     }
-    
+
 }
