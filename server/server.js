@@ -1,9 +1,8 @@
-var express = require('express');
-var websocket = require('socket.io');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var gamehub = require('./src/gamehub');
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const gamehub = require('./src/gamehub');
 
 app.use(express.static('./dist/public'));
 
@@ -20,7 +19,6 @@ io.on('connection', function(socket) {
       gamehub.disconnect(socket.inputId);
     }
     console.log('gamepad disconnected');
-    return null;
   });
 
   socket.on('hello', function() {
@@ -30,19 +28,15 @@ io.on('connection', function(socket) {
         console.log('hello input -> ' + socket.inputId);
         socket.emit('hello', {
           inputId: inputId
-        })
+        });
       }
-      return null;
     });
-    return null;
   });
 
   socket.on('event', function(code) {
-    // console.log('event -> ' + code + ' input -> ' + socket.inputId);
     if(socket.inputId !== undefined && code){
       gamehub.sendEvent(socket.inputId, code);
     }
-    return null;
   });
 
 });
