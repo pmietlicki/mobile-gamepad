@@ -15,7 +15,7 @@ module.exports = class GameController {
             ioctl(this.fd, uinput.UI_DEV_DESTROY);
             fs.close(this.fd, err => {
                 if (err) {
-                    console.error('error to close file', err);
+                    console.error('Error closing file descriptor:', err);
                 }
             });
             this.fd = undefined;
@@ -24,12 +24,12 @@ module.exports = class GameController {
     }
 
     connect() {
-        console.log('connect gamepad');
+        console.log('Connecting gamepad');
 
         fs.open('/dev/uinput', 'w+', (err, fd) => {
             if (err) {
-                console.log(err);
-                throw (err);
+                console.error('Error opening /dev/uinput:', err);
+                throw err;
             }
 
             this.fd = fd;
@@ -93,8 +93,8 @@ module.exports = class GameController {
 
             fs.write(fd, buffer, 0, buffer.length, (err, written, buffer) => {
                 if (err) {
-                    console.log(err);
-                    throw (err);
+                    console.error('Error writing to file descriptor:', err);
+                    throw err;
                 } else {
                     ioctl(this.fd, uinput.UI_DEV_CREATE);
                     console.log('Gamepad connected and device created');
