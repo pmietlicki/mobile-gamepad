@@ -11,14 +11,14 @@ Mobile Universal Gamepad for RetroPie (http://mobilegamepad.net/)
 ```bash
 # Install nodejs (tested with nodejs v12.17.0)
 sudo apt-get update && sudo apt-get upgrade
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install -y nodejs
+sudo apt-get install -y npm
 
 # Install Grunt Command Line Interface
 sudo npm install -g grunt-cli
 
 # Clone project MobileGamePad and install dependencies
-git clone https://github.com/sbidolach/mobile-gamepad.git
+git clone https://github.com/pmietlicki/mobile-gamepad.git
 cd mobile-gamepad
 npm install
 
